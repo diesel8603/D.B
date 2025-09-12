@@ -1,0 +1,113 @@
+/* Genel Stil */
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  text-align: center;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+:root {
+  --bg: #0d1117;
+  --text: #ffffff;
+}
+
+body.light {
+  --bg: #f6f8fa;
+  --text: #0d1117;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-top: 2rem;
+}
+
+button {
+  margin-top: 1rem;
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+/* Splash Screen */
+#splash {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  animation: fadeIn 0.5s ease;
+}
+
+#splash img {
+  width: 96px;
+  height: 96px;
+  margin-bottom: 1rem;
+}
+
+#splash h2 {
+  font-size: 1.5rem;
+  margin: 0 0 1rem;
+}
+
+.progress-container {
+  width: 70%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0.5rem 0 1rem;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0;
+  background: #2563eb;
+  transition: width 0.1s linear;
+}
+
+#loadingText {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.fade-out {
+  animation: fadeOut 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Mobil uyum */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.5rem;
+  }
+  button {
+    font-size: 0.9rem;
+  }
+}

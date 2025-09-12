@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="Tam özellikli PWA örneği">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- iOS uyumluluk -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+
+  <title>PWA Örnek</title>
+
+  <!-- Manifest ve favicon -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#0d1117">
+  <link rel="icon" href="./icons/icon-192.png">
+
+  <!-- Stil -->
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body class="dark">
+  <!-- Splash Screen -->
+  <div id="splash">
+    <img src="./icons/icon-192.png" alt="logo">
+    <h2>PWA Örnek</h2>
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <p id="loadingText">Yükleniyor...</p>
+  </div>
+
+  <!-- Ana İçerik -->
+  <main id="app" class="hidden">
+    <h1>PWA Örnek Uygulama</h1>
+    <p>Bu sayfa offline çalışır. Ana ekrana ekleyebilirsin.</p>
+    <button id="installBtn" hidden>📲 Ana Ekrana Ekle</button>
+  </main>
+
+  <!-- Service Worker kaydı -->
+  <script src="./sw-register.js"></script>
+
+  <!-- Splash Screen ve Tema -->
+  <script>
+    // Splash Screen progress simülasyonu
+    let progress = 0;
+    const progressBar = document.getElementById("progressBar");
+    const loadingText = document.getElementById("loadingText");
+
+    const interval = setInterval(() => {
+      progress += 10;
+      if (progressBar) progressBar.style.width = progress + "%";
+      if (loadingText) loadingText.textContent = `Yükleniyor... %${progress}`;
+
+      if (progress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          const splash = document.getElementById("splash");
+          const app = document.getElementById("app");
+          if (splash) splash.classList.add("fade-out");
+          setTimeout(() => {
+            if (splash) splash.remove();
+            if (app) app.classList.remove("hidden");
+          }, 500);
+        }, 200);
+      }
+    }, 100);
+
+    // Tema algılama
+    if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+      document.body.classList.remove("dark");
+      document.body.classList.add("light");
+    }
+  </script>
+
+  <!-- Ana Ekrana Ekle -->
+  <script>
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+
+// Tarayıcı 'beforeinstallprompt' eventini yakala
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();      // Tarayıcının otomatik promptunu engelle
+  deferredPrompt = e;      // Event’i sakla
+});
+
+// Splash progress tamamlandığında butonu göster
+const splashCheck = setInterval(() => {
+  const splash = document.getElementById('splash');
+  const app = document.getElementById('app');
+
+  // Splash tamamen gitti mi?
+  if (!splash && app) {
+    clearInterval(splashCheck);
+    // Buton varsa ve deferredPrompt gelmişse göster
+    if (installBtn && deferredPrompt) {
+      installBtn.hidden = false;
+    }
+  }
+}, 100);
+
+// Butona tıklandığında promptu aç
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) return; // Event gelmemişse çık
+  installBtn.hidden = true;    // Butonu gizle
+  deferredPrompt.prompt();      // Ana ekrana ekleme promptunu aç
+  const choice = await deferredPrompt.userChoice;
+  console.log('Kullanıcı seçimi:', choice.outcome);
+  deferredPrompt = null;        // Event’i sıfırla
+});
+
+// Uygulama yüklendiğinde log
+window.addEventListener('appinstalled', () => {
+  console.log('Uygulama ana ekrana eklendi.');
+});
+</script>
+
+</body>
+</html>
