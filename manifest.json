@@ -1,12 +1,12 @@
 {
-  "name": "PWA Örnek Uygulama",
-  "short_name": "PWA",
+  "name": "D❤️",
+  "short_name": "D❤️",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0d1117",
   "theme_color": "#0d1117",
-  "description": "Tam özellikli PWA örneği",
+  "description": "Diloma Özel Tasarlandı",
   "icons": [
     {
       "src": "./icons/icon-192.png",
@@ -21,3 +21,4 @@
     }
   ]
 }
+
