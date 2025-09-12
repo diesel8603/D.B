@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
 
-  <title>PWA Örnek</title>
+  <title> Diloma özel tasarlandı </title>
 
   <!-- Manifest ve favicon -->
   <link rel="manifest" href="./manifest.json">
@@ -19,6 +19,88 @@
 
   <!-- Stil -->
   <link rel="stylesheet" href="./style.css">
+
+  <!-- Popup CSS -->
+  <style>
+/* Popup Genel Stil */
+.popup {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  max-width: 320px;
+  padding: 1rem 1.8rem;
+  border-radius: 22px;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+  opacity: 0;
+  transform: translateY(-30px) scale(0.95);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  text-align: left;
+  overflow: hidden;
+  position: fixed;
+}
+
+.popup .icon { font-size: 1.5rem; }
+.popup .message { flex: 1; position: relative; z-index: 2; }
+
+/* Light effect */
+.popup .light-effect {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+  animation: lightPulse 2s infinite;
+  z-index: 1;
+}
+
+@keyframes lightPulse {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.1); opacity: 0.6; }
+}
+
+/* Popup görünür */
+.popup.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Kaybolma animasyonu */
+.popup.hide {
+  opacity: 0;
+  transform: translateY(-30px) scale(0.95);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* Saatlere özel renk ve ikon */
+.popup.morning { background: rgba(255, 223, 186, 0.85); color: #333; }
+.popup.morning .icon::before { content: "☀️"; }
+
+.popup.afternoon { background: rgba(255, 180, 80, 0.85); }
+.popup.afternoon .icon::before { content: "🌤️"; }
+
+.popup.evening { background: rgba(100, 50, 150, 0.85); }
+.popup.evening .icon::before { content: "🌆"; }
+
+.popup.night { background: rgba(20, 30, 60, 0.85); }
+.popup.night .icon::before { content: "🌙"; }
+
+/* Mobil uyum */
+@media (max-width: 600px) {
+  .popup { max-width: 90%; padding: 0.8rem 1.2rem; font-size: 0.9rem; }
+  .popup .icon { font-size: 1.3rem; }
+}
+</style>
+  </style>
 </head>
 <body class="dark">
   <!-- Splash Screen -->
@@ -38,12 +120,18 @@
     <button id="installBtn" hidden>📲 Ana Ekrana Ekle</button>
   </main>
 
+  <!-- Popup HTML -->
+<div id="timePopup" class="popup hidden">
+  <span class="icon"></span>
+  <span class="message"></span>
+  <div class="light-effect"></div>
+</div>
+
   <!-- Service Worker kaydı -->
   <script src="./sw-register.js"></script>
 
   <!-- Splash Screen ve Tema -->
   <script>
-    // Splash Screen progress simülasyonu
     let progress = 0;
     const progressBar = document.getElementById("progressBar");
     const loadingText = document.getElementById("loadingText");
@@ -62,12 +150,15 @@
           setTimeout(() => {
             if (splash) splash.remove();
             if (app) app.classList.remove("hidden");
+            // Splash bittikten sonra popup göster
+            showTimePopup();
+            // Ana ekrana ekle butonunu kontrol
+            if (installBtn && deferredPrompt) installBtn.hidden = false;
           }, 500);
         }, 200);
       }
     }, 100);
 
-    // Tema algılama
     if (window.matchMedia('(prefers-color-scheme: light)').matches) {
       document.body.classList.remove("dark");
       document.body.classList.add("light");
@@ -76,45 +167,71 @@
 
   <!-- Ana Ekrana Ekle -->
   <script>
-let deferredPrompt;
-const installBtn = document.getElementById('installBtn');
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
 
-// Tarayıcı 'beforeinstallprompt' eventini yakala
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();      // Tarayıcının otomatik promptunu engelle
-  deferredPrompt = e;      // Event’i sakla
-});
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
 
-// Splash progress tamamlandığında butonu göster
-const splashCheck = setInterval(() => {
-  const splash = document.getElementById('splash');
-  const app = document.getElementById('app');
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      installBtn.hidden = true;
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      console.log('Kullanıcı seçimi:', choice.outcome);
+      deferredPrompt = null;
+    });
 
-  // Splash tamamen gitti mi?
-  if (!splash && app) {
-    clearInterval(splashCheck);
-    // Buton varsa ve deferredPrompt gelmişse göster
-    if (installBtn && deferredPrompt) {
-      installBtn.hidden = false;
-    }
+    window.addEventListener('appinstalled', () => {
+      console.log('Uygulama ana ekrana eklendi.');
+    });
+  </script>
+
+  <!-- Saat bazlı Popup -->
+  <script>
+function showTimePopup() {
+  const popup = document.getElementById('timePopup');
+  const messageSpan = popup.querySelector('.message');
+  if (!popup || !messageSpan) return;
+
+  const now = new Date();
+  const hours = now.getHours();
+  let message = '';
+  let className = '';
+
+  if (hours >= 6 && hours <= 14) {
+    message = 'Günaydın güzelimm ❤️';
+    className = 'morning';
+  } else if (hours >= 14 && hours <= 18) {
+    message = 'Günün gülüşün kadar güzel geçsin dilom ❤️';
+    className = 'afternoon';
+  } else if (hours >= 18 && hours <= 23) {
+    message = 'iyi akşamlar dilooom ❤️ ';
+    className = 'evening';
+  } else {
+    message = 'iyi geceler tatlı rüyalar bitanem ❤️';
+    className = 'night';
   }
-}, 100);
 
-// Butona tıklandığında promptu aç
-installBtn.addEventListener('click', async () => {
-  if (!deferredPrompt) return; // Event gelmemişse çık
-  installBtn.hidden = true;    // Butonu gizle
-  deferredPrompt.prompt();      // Ana ekrana ekleme promptunu aç
-  const choice = await deferredPrompt.userChoice;
-  console.log('Kullanıcı seçimi:', choice.outcome);
-  deferredPrompt = null;        // Event’i sıfırla
-});
+  messageSpan.textContent = message;
+  popup.className = `popup ${className} show`;
 
-// Uygulama yüklendiğinde log
-window.addEventListener('appinstalled', () => {
-  console.log('Uygulama ana ekrana eklendi.');
-});
-</script>
+  // 10 saniye sonra kaybol
+  setTimeout(() => {
+    popup.classList.add('hide');
+    setTimeout(() => popup.className = 'popup', 500);
+  }, 10000);
+}
 
+
+
+    // Eğer sayfa splash olmadan açılırsa direkt popup
+    window.addEventListener('load', () => {
+      const splash = document.getElementById('splash');
+      if (!splash) showTimePopup();
+    });
+  </script>
 </body>
 </html>
