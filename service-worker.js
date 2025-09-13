@@ -1,10 +1,11 @@
-const CACHE_NAME = "pwa-cache-v2"; // eskiyse v1 -> v2 yap
+const CACHE_NAME = "pwa-cache-v3"; // eskiyse v1 -> v2 yap
 const ASSETS = [
   "./",
   "./index.html",
   "./style.css",
   "./manifest.json",
-  "./offline.html",      // <- ekledik
+  "./offline.html",
+  "./404.html",// <- ekledik
   "./icons/icon-192.png",
   "./icons/icon-512.png"
 ];
@@ -48,3 +49,4 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
+
