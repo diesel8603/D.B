@@ -9,16 +9,17 @@
   "description": "Diloma Özel Tasarlandı",
   "icons": [
     {
-      "src": "./icons/icon-192.png",
-      "sizes": "192x192",
+      "src": "./icons/icon-250.png",
+      "sizes": "256x256",
       "type": "image/png"
     },
     {
-      "src": "./icons/icon-512.png",
+      "src": "./icons/icon-500.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ]
 }
+
 
