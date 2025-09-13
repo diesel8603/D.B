@@ -1,6 +1,6 @@
 {
-  "name": "D❤️",
-  "short_name": "D❤️",
+  "name": "D",
+  "short_name": "D",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -21,3 +21,4 @@
     }
   ]
 }
+
